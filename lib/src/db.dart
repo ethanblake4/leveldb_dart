@@ -320,10 +320,10 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
     }
   }
 
-  DBIterator exec(ReadOptions readOptions, {Position initialPosition = const Position.first()}) {
+  DBIterator exec(ReadOptions readOptions, {Position<RawData> initialPosition = const Position.first()}) {
     return DBIterator.atPosition(
       dbptr: lib.leveldbCreateIterator(ptr, readOptions.ptr as Pointer<leveldb_readoptions_t>),
-      initialPosition: initialPosition as Position<RawData>?,
+      initialPosition: initialPosition,
     );
   }
 
@@ -332,7 +332,7 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
     bool verifyChecksums = false,
     bool fillCache = true,
     Snapshot? snapshot,
-    Position initialPosition = const Position.first(),
+    Position<RawData> initialPosition = const Position.first(),
   }) {
     attemptTo('iterator');
     // ignore: invalid_use_of_protected_member
