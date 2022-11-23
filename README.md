@@ -23,4 +23,4 @@ A flutter plugin project to build leveldb for Android/iOS
   ```
 
 ## leveldb Source Project
-[leveldb](https://github.com/google/leveldb)
+[google/leveldb](https://github.com/google/leveldb)

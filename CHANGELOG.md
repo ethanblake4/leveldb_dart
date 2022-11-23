@@ -1,3 +1,8 @@
-## 0.0.1
+## 1.0.0
 
-* TODO: Describe initial release.
+* port dart-ffi for [google/leveldb](https://github.com/google/leveldb)
+* feature tested
+  * db put
+  * db get
+  * db delete
+  * db iterator
