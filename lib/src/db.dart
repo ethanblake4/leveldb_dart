@@ -6,7 +6,6 @@ import 'package:flutter_leveldb/src/write_options.dart';
 import 'batch_updates.dart';
 import 'extensions.dart';
 import 'iterator.dart';
-import 'kv_entry.dart';
 import 'library.dart';
 import 'native_wrapper.dart';
 import 'options.dart';
@@ -109,7 +108,7 @@ abstract class LevelDB {
   /// (which must belong to the DB that is being read and which must
   /// not have been released).  If [snapshot] is null, use an implicit
   /// snapshot of the state at the beginning of this read operation.
-  Iterator<KeyValue<RawData, RawData>> iterator({
+  DBIterator iterator({
     bool verifyChecksums = false,
     bool fillCache = true,
     Snapshot snapshot,
@@ -328,7 +327,7 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
   }
 
   @override
-  Iterator<KeyValue<RawData, RawData>> iterator({
+  DBIterator iterator({
     bool verifyChecksums = false,
     bool fillCache = true,
     Snapshot? snapshot,
@@ -343,7 +342,7 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
     );
 
     if (readOptionsAreDefault) {
-      return exec(ReadOptions.defaultOptions, initialPosition: initialPosition) as Iterator<KeyValue<RawData, RawData>>;
+      return exec(ReadOptions.defaultOptions, initialPosition: initialPosition);
     } else {
       final options = ReadOptions(
         fillCache: fillCache,
@@ -352,7 +351,7 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
       );
       final result = exec(options);
       options.dispose();
-      return result as Iterator<KeyValue<RawData, RawData>>;
+      return result;
     }
   }
 
