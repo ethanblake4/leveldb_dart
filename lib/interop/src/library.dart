@@ -100,84 +100,151 @@ abstract class LibLevelDB {
 class _LibLevelDB implements LibLevelDB {
   final DynamicLibrary lib;
 
+  @override
   final Leveldb_open leveldbOpen;
+  @override
   final Leveldb_close leveldbClose;
+  @override
   final Leveldb_put leveldbPut;
+  @override
   final Leveldb_delete leveldbDelete;
+  @override
   final Leveldb_write leveldbWrite;
+  @override
   final Leveldb_get leveldbGet;
+  @override
   final Leveldb_property_value leveldbPropertyValue;
+  @override
   final Leveldb_approximate_sizes leveldbApproximateSizes;
+  @override
   final Leveldb_compact_range leveldbCompactRange;
+  @override
   final Leveldb_destroy_db leveldbDestroyDb;
+  @override
   final Leveldb_repair_db leveldbRepairDb;
+  @override
   final Leveldb_free leveldbFree;
+  @override
   final Leveldb_major_version leveldbMajorVersion;
+  @override
   final Leveldb_minor_version leveldbMinorVersion;
   // LevelDB Snapshot
+  @override
   final Leveldb_create_snapshot leveldbCreateSnapshot;
+  @override
   final Leveldb_release_snapshot leveldbReleaseSnapshot;
   // LevelDB Options
+  @override
   final Leveldb_options_create leveldbOptionsCreate;
+  @override
   final Leveldb_options_destroy leveldbOptionsDestroy;
+  @override
   final Leveldb_options_set_comparator leveldbOptionsSetComparator;
+  @override
   final Leveldb_options_set_filter_policy leveldbOptionsSetFilterPolicy;
+  @override
   final Leveldb_options_set_create_if_missing leveldbOptionsSetCreateIfMissing;
+  @override
   final Leveldb_options_set_error_if_exists leveldbOptionsSetErrorIfExists;
+  @override
   final Leveldb_options_set_paranoid_checks leveldbOptionsSetParanoidChecks;
+  @override
   final Leveldb_options_set_env leveldbOptionsSetEnv;
+  @override
   final Leveldb_options_set_info_log leveldbOptionsSetInfoLog;
+  @override
   final Leveldb_options_set_write_buffer_size leveldbOptionsSetWriteBufferSize;
+  @override
   final Leveldb_options_set_max_open_files leveldbOptionsSetMaxOpenFiles;
+  @override
   final Leveldb_options_set_cache leveldbOptionsSetCache;
+  @override
   final Leveldb_options_set_block_size leveldbOptionsSetBlockSize;
+  @override
   final Leveldb_options_set_block_restart_interval
       leveldbOptionsSetBlockRestartInterval;
+  @override
   final Leveldb_options_set_max_file_size leveldbOptionsSetMaxFileSize;
+  @override
   final Leveldb_options_set_compression leveldbOptionsSetCompression;
   // LevelDB Read Options
+  @override
   final Leveldb_readoptions_create leveldbReadoptionsCreate;
+  @override
   final Leveldb_readoptions_destroy leveldbReadoptionsDestroy;
+  @override
   final Leveldb_readoptions_set_verify_checksums
       leveldbReadoptionsSetVerifyChecksums;
+  @override
   final Leveldb_readoptions_set_fill_cache leveldbReadoptionsSetFillCache;
+  @override
   final Leveldb_readoptions_set_snapshot leveldbReadoptionsSetSnapshot;
   // LevelDB Write Options
+  @override
   final Leveldb_writeoptions_create leveldbWriteoptionsCreate;
+  @override
   final Leveldb_writeoptions_destroy leveldbWriteoptionsDestroy;
+  @override
   final Leveldb_writeoptions_set_sync leveldbWriteoptionsSetSync;
   // LevelDB Cache
+  @override
   final Leveldb_cache_destroy leveldbCacheDestroy;
+  @override
   final Leveldb_cache_create_lru leveldbCacheCreateLru;
   // LevelDB Env
+  @override
   final Leveldb_create_default_env leveldbCreateDefaultEnv;
+  @override
   final Leveldb_env_destroy leveldbEnvDestroy;
   // LevelDB Filter Policy
+  @override
   final Leveldb_filterpolicy_create leveldbFilterpolicyCreate;
+  @override
   final Leveldb_filterpolicy_destroy leveldbFilterpolicyDestroy;
+  @override
   final Leveldb_filterpolicy_create_bloom leveldbFilterpolicyCreateBloom;
   // LevelDB Comparator
+  @override
   final Leveldb_comparator_create leveldbComparatorCreate;
+  @override
   final Leveldb_comparator_destroy leveldbComparatorDestroy;
   // LevelDB Iterator
+  @override
   final Leveldb_create_iterator leveldbCreateIterator;
+  @override
   final Leveldb_iter_destroy leveldbIterDestroy;
+  @override
   final Leveldb_iter_valid leveldbIterValid;
+  @override
   final Leveldb_iter_seek_to_first leveldbIterSeekToFirst;
+  @override
   final Leveldb_iter_seek_to_last leveldbIterSeekToLast;
+  @override
   final Leveldb_iter_seek leveldbIterSeek;
+  @override
   final Leveldb_iter_next leveldbIterNext;
+  @override
   final Leveldb_iter_prev leveldbIterPrev;
+  @override
   final Leveldb_iter_key leveldbIterKey;
+  @override
   final Leveldb_iter_value leveldbIterValue;
+  @override
   final Leveldb_iter_get_error leveldbIterGetError;
   // LevelDB Write batch
+  @override
   final Leveldb_writebatch_create leveldbWritebatchCreate;
+  @override
   final Leveldb_writebatch_destroy leveldbWritebatchDestroy;
+  @override
   final Leveldb_writebatch_clear leveldbWritebatchClear;
+  @override
   final Leveldb_writebatch_put leveldbWritebatchPut;
+  @override
   final Leveldb_writebatch_delete leveldbWritebatchDelete;
+  @override
   final Leveldb_writebatch_iterate leveldbWritebatchIterate;
+  @override
   final Leveldb_writebatch_append leveldbWritebatchAppend;
 
   _LibLevelDB(this.lib)
@@ -187,16 +254,18 @@ class _LibLevelDB implements LibLevelDB {
         leveldbClose = lib
             .lookup<NativeFunction<leveldb_close>>('leveldb_close')
             .asFunction(),
-        leveldbPut =
-            lib.lookup<NativeFunction<leveldb_put>>('leveldb_put').asFunction(),
+        leveldbPut = lib
+            .lookup<NativeFunction<leveldb_put>>('leveldb_put')
+            .asFunction(),
         leveldbDelete = lib
             .lookup<NativeFunction<leveldb_delete>>('leveldb_delete')
             .asFunction(),
         leveldbWrite = lib
             .lookup<NativeFunction<leveldb_write>>('leveldb_write')
             .asFunction(),
-        leveldbGet =
-            lib.lookup<NativeFunction<leveldb_get>>('leveldb_get').asFunction(),
+        leveldbGet = lib
+            .lookup<NativeFunction<leveldb_get>>('leveldb_get')
+            .asFunction(),
         leveldbPropertyValue = lib
             .lookup<NativeFunction<leveldb_property_value>>(
                 'leveldb_property_value')

@@ -75,6 +75,11 @@ abstract class LevelDB {
     return _SLevelDB.destroy(filePath, options);
   }
 
+  ///
+  /// Close leveldb, release any pointer
+  ///
+  void close();
+
   /// Returns the corresponding value for [key]
   ///
   /// **[verifyChecksums]**: If true, all data read from underlying
@@ -242,6 +247,11 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
         (errptr) => lib.leveldbOpen(options.ptr as Pointer<leveldb_options_t>, strptr, errptr),
       );
     }, () => name.toNativeUtf8());
+  }
+
+  @override
+  void close() {
+    lib.leveldbClose(ptr);// close db before dispose
   }
 
   @override
@@ -456,7 +466,7 @@ class _Snapshot implements Snapshot {
 
   @override
   void dispose() {
-    if (this.isDisposed) return;
+    if (isDisposed) return;
     if (dbptr == null || dbptr == nullptr) {
       throw StateError('Attempt to [Snapshot.dispose] after [LevelDB.dispose]');
     }
