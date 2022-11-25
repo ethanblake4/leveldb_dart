@@ -1,6 +1,6 @@
 name: flutter_leveldb
 description: A flutter plugin project to build leveldb for Android/iOS.
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/LiuJQ/flutter_leveldb
 
 environment:

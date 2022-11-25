@@ -6,3 +6,8 @@
   * db get
   * db delete
   * db iterator
+
+## 1.0.1
+
+* export useful api: `BatchUpdate`, `DBIterator`
+* support close db
