@@ -1,6 +1,6 @@
 import 'dart:ffi';
 
-import 'package:flutter_leveldb/interop/interop.dart';
+import 'package:leveldb_dart/src/leveldb_bindings.dart';
 
 import 'extensions.dart';
 import 'library.dart';
@@ -49,7 +49,7 @@ class _BatchUpdates implements BatchUpdates {
   @override
   Pointer<leveldb_writebatch_t> ptr;
 
-  _BatchUpdates(this.lib) : ptr = lib.leveldbWritebatchCreate();
+  _BatchUpdates(this.lib) : ptr = lib.leveldb_writebatch_create();
 
   @override
   void operator +(BatchUpdates obj) {
@@ -61,18 +61,19 @@ class _BatchUpdates implements BatchUpdates {
     attemptTo('append');
     updates.attemptTo('append');
 
-    lib.leveldbWritebatchAppend(ptr, updates.ptr as Pointer<leveldb_writebatch_t>);
+    lib.leveldb_writebatch_append(
+        ptr, updates.ptr as Pointer<leveldb_writebatch_t>);
   }
 
   @override
   void put(RawData key, RawData value) {
     attemptTo('put');
 
-    return lib.leveldbWritebatchPut(
+    return lib.leveldb_writebatch_put(
       ptr,
-      key.ptr,
+      key.ptr.cast(),
       key.length,
-      value.ptr,
+      value.ptr.cast(),
       value.length,
     );
   }
@@ -81,20 +82,20 @@ class _BatchUpdates implements BatchUpdates {
   void delete(RawData key) {
     attemptTo('delete');
 
-    return lib.leveldbWritebatchDelete(ptr, key.ptr, key.length);
+    return lib.leveldb_writebatch_delete(ptr, key.ptr.cast(), key.length);
   }
 
   @override
   void clear() {
     if (isDisposed) return;
 
-    lib.leveldbWritebatchClear(ptr);
+    lib.leveldb_writebatch_clear(ptr);
   }
 
   @override
   void dispose() {
     if (isDisposed) return;
 
-    lib.leveldbWritebatchDestroy(ptr);
+    lib.leveldb_writebatch_destroy(ptr);
   }
 }

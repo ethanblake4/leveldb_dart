@@ -1,7 +1,6 @@
 import 'dart:ffi';
 
-import 'package:flutter_leveldb/interop/src/leveldb_cache_t.dart';
-import 'package:flutter_leveldb/interop/src/library.dart';
+import 'package:leveldb_dart/src/leveldb_bindings.dart';
 
 import 'extensions.dart';
 import 'library.dart';
@@ -22,12 +21,12 @@ class _Cache implements Cache {
   _Cache(
     this.lib,
     int capacity,
-  ) : ptr = lib.leveldbCacheCreateLru(capacity);
+  ) : ptr = lib.leveldb_cache_create_lru(capacity);
 
   @override
   void dispose() {
     if (isDisposed) return;
-    lib.leveldbCacheDestroy(ptr);
+    lib.leveldb_cache_destroy(ptr);
     ptr = nullptr;
   }
 }

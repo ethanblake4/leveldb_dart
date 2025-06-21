@@ -1,21 +1,24 @@
 import 'dart:ffi';
 import 'dart:io';
 
-import 'package:flutter_leveldb/interop/interop.dart' show LibLevelDB;
+import 'package:leveldb_dart/src/leveldb_bindings.dart';
 
 abstract class Lib {
   /// lazy static var
-  static final LibLevelDB levelDB = LibLevelDB.lookupLib(_load('leveldb'));
+  static bool _isInitialized = false;
+  static late final LibLevelDB levelDB;
 
-  static DynamicLibrary _load(String name) {
+  static LibLevelDB loadLevelDB(String? dlpath) {
+    if (_isInitialized) {
+      return levelDB;
+    }
+    if (dlpath != null) {
+      return levelDB = LibLevelDB(DynamicLibrary.open(dlpath));
+    }
     if (Platform.isIOS || Platform.isMacOS) {
-      return DynamicLibrary.process();
+      return levelDB = LibLevelDB(DynamicLibrary.process());
     }
-    if (Platform.isAndroid) {
-      return DynamicLibrary.open('lib$name.so');
-    }
-    throw UnsupportedError(
-      'Currently LevelDB supports only iOS, MacOS and Android platforms',
-    );
+    final dlExtension = Platform.isWindows ? '.dll' : '.so';
+    return levelDB = LibLevelDB(DynamicLibrary.open('libleveldb.$dlExtension'));
   }
 }

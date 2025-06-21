@@ -1,9 +1,9 @@
 import 'dart:ffi';
 
-import 'package:flutter_leveldb/interop/interop.dart';
-import 'package:flutter_leveldb/src/kv_entry.dart';
-import 'package:flutter_leveldb/src/library.dart';
-import 'package:flutter_leveldb/src/utils.dart';
+import 'package:leveldb_dart/src/kv_entry.dart';
+import 'package:leveldb_dart/src/leveldb_bindings.dart';
+import 'package:leveldb_dart/src/library.dart';
+import 'package:leveldb_dart/src/utils.dart';
 
 import 'extensions.dart';
 import 'native_wrapper.dart';
@@ -113,14 +113,14 @@ class _DBIterator implements DBIterator {
   @override
   void dispose() {
     if (isDisposed) return;
-    lib.leveldbIterDestroy(ptr);
+    lib.leveldb_iter_destroy(ptr);
     ptr = nullptr;
   }
 
   @override
   Exception? getError() {
     try {
-      errorHandler((errPtr) => lib.leveldbIterGetError(ptr, errPtr));
+      errorHandler((errPtr) => lib.leveldb_iter_get_error(ptr, errPtr));
       return null;
     } catch (e) {
       return e as Exception;
@@ -130,54 +130,54 @@ class _DBIterator implements DBIterator {
   @override
   bool get isValid {
     if (isDisposed) return false;
-    return lib.leveldbIterValid(ptr) == 1;
+    return lib.leveldb_iter_valid(ptr) == 1;
   }
 
   @override
   RawData key() {
     attemptTo('key');
-    return allocctx((Pointer<IntPtr> keySize) {
-      final key = lib.leveldbIterKey(ptr, keySize);
-      return RawData.native(key, keySize.value);
+    return allocctx((Pointer<Size> keySize) {
+      final key = lib.leveldb_iter_key(ptr, keySize);
+      return RawData.native(key.cast(), keySize.value);
     });
   }
 
   @override
   void next() {
     attemptTo('next');
-    lib.leveldbIterNext(ptr);
+    lib.leveldb_iter_next(ptr);
   }
 
   @override
   void prev() {
     attemptTo('prev');
-    lib.leveldbIterPrev(ptr);
+    lib.leveldb_iter_prev(ptr);
   }
 
   @override
   void seek(RawData targetKey) {
     attemptTo('seek');
-    lib.leveldbIterSeek(ptr, targetKey.ptr, targetKey.length);
+    lib.leveldb_iter_seek(ptr, targetKey.ptr.cast(), targetKey.length);
   }
 
   @override
   void seekToFirst() {
     attemptTo('seekToFirst');
-    lib.leveldbIterSeekToFirst(ptr);
+    lib.leveldb_iter_seek_to_first(ptr);
   }
 
   @override
   void seekToLast() {
     attemptTo('seekToLast');
-    lib.leveldbIterSeekToLast(ptr);
+    lib.leveldb_iter_seek_to_last(ptr);
   }
 
   @override
   RawData value() {
     attemptTo('value');
-    return allocctx((Pointer<IntPtr> valueSize) {
-      final value = lib.leveldbIterValue(ptr, valueSize);
-      return RawData.native(value, valueSize.value);
+    return allocctx((Pointer<Size> valueSize) {
+      final value = lib.leveldb_iter_value(ptr, valueSize);
+      return RawData.native(value.cast(), valueSize.value);
     });
   }
 

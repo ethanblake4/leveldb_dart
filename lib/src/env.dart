@@ -1,6 +1,6 @@
 import 'dart:ffi';
 
-import 'package:flutter_leveldb/interop/interop.dart';
+import 'package:leveldb_dart/src/leveldb_bindings.dart';
 import 'extensions.dart';
 import 'library.dart';
 import 'native_wrapper.dart';
@@ -20,12 +20,12 @@ class _Env implements Env {
   @override
   Pointer<leveldb_env_t> ptr;
 
-  _Env(this.lib) : ptr = lib.leveldbCreateDefaultEnv();
+  _Env(this.lib) : ptr = lib.leveldb_create_default_env();
 
   @override
   void dispose() {
     if (isDisposed) return;
-    lib.leveldbEnvDestroy(ptr);
+    lib.leveldb_env_destroy(ptr);
     ptr = nullptr;
   }
 }

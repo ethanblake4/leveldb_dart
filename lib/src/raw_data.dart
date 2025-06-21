@@ -2,7 +2,7 @@ import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
-import 'package:flutter_leveldb/src/extensions.dart';
+import 'package:leveldb_dart/src/extensions.dart';
 
 import 'native_wrapper.dart';
 
@@ -13,6 +13,11 @@ abstract class RawData extends DisposablePointer<Uint8> {
 
   factory RawData.native(Pointer<Uint8> pointer, int length) =>
       _RawData.native(pointer, length);
+
+  factory RawData.fromString(String str) {
+    final bytes = str.toNativeUtf8(allocator: calloc);
+    return _RawData.native(bytes.cast<Uint8>(), bytes.length);
+  }
 
   factory RawData.fromList(Uint8List bytes) => _RawData.fromList(bytes);
 }
@@ -39,7 +44,7 @@ class _RawData implements RawData {
 
   @override
   void dispose() {
-    // bytes = null;
+    bytes = Uint8List(0);
     length = 0;
     calloc.free(ptr);
   }

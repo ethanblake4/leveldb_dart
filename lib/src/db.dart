@@ -1,7 +1,7 @@
 import 'dart:ffi';
 import 'package:ffi/ffi.dart';
-import 'package:flutter_leveldb/interop/interop.dart';
-import 'package:flutter_leveldb/src/write_options.dart';
+import 'package:leveldb_dart/src/leveldb_bindings.dart';
+import 'package:leveldb_dart/src/write_options.dart';
 
 import 'batch_updates.dart';
 import 'extensions.dart';
@@ -15,15 +15,15 @@ import 'snapshot.dart';
 import 'utils.dart';
 
 abstract class LevelDB {
+  static init(String? libraryPath) {
+    Lib.loadLevelDB(libraryPath);
+  }
+
   /// Open the database with the specified [filePath].
   factory LevelDB.open({
     required Options options,
     required String filePath,
   }) {
-    assert(
-      options != null,
-      'LevelDB.open: "options" parameter is required',
-    );
     assert(
       filePath.isNotEmpty,
       'LevelDB.open: "filePath" parameter is required',
@@ -36,17 +36,10 @@ abstract class LevelDB {
   }
 
   factory LevelDB.pointer({
+    String? libraryPath,
     required Pointer<leveldb_t> pointer,
     required Options options,
   }) {
-    assert(
-      options != null,
-      'LevelDB.open: "options" parameter is required',
-    );
-    assert(
-      pointer != null && pointer != nullptr,
-      'LevelDB.open: "pointer" parameter is required',
-    );
     return _LevelDB.ptr(
       Lib.levelDB,
       options: options,
@@ -79,6 +72,8 @@ abstract class LevelDB {
   /// Close leveldb, release any pointer
   ///
   void close();
+
+  void free(RawData data);
 
   /// Returns the corresponding value for [key]
   ///
@@ -202,8 +197,9 @@ extension _SLevelDB on _LevelDB {
     return errorHandler((errPtr) {
       return allocctx((strPtr) {
         // ignore: invalid_use_of_protected_member
-        return Lib.levelDB.leveldbRepairDb(options.ptr as Pointer<leveldb_options_t>, strPtr as Pointer<Utf8>, errPtr);
-      }, () => filePath.toNativeUtf8());
+        return Lib.levelDB.leveldb_repair_db(
+            options.ptr as Pointer<leveldb_options_t>, strPtr, errPtr);
+      }, () => filePath.toNativeUtf8().cast<Char>());
     });
   }
 
@@ -211,7 +207,8 @@ extension _SLevelDB on _LevelDB {
     return errorHandler((errPtr) {
       return allocctx((strPtr) {
         // ignore: invalid_use_of_protected_member
-        return Lib.levelDB.leveldbDestroyDb(options.ptr as Pointer<leveldb_options_t>, strPtr as Pointer<Utf8>, errPtr);
+        return Lib.levelDB.leveldb_destroy_db(
+            options.ptr as Pointer<leveldb_options_t>, strPtr.cast(), errPtr);
       }, () => filePath.toNativeUtf8());
     });
   }
@@ -244,14 +241,15 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
     return allocctx((Pointer<Utf8> strptr) {
       return errorHandler(
         // ignore: invalid_use_of_protected_member
-        (errptr) => lib.leveldbOpen(options.ptr as Pointer<leveldb_options_t>, strptr, errptr),
+        (errptr) => lib.leveldb_open(
+            options.ptr as Pointer<leveldb_options_t>, strptr.cast(), errptr),
       );
     }, () => name.toNativeUtf8());
   }
 
   @override
   void close() {
-    lib.leveldbClose(ptr);// close db before dispose
+    lib.leveldb_close(ptr); // close db before dispose
   }
 
   @override
@@ -264,13 +262,15 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
 
   @override
   void delete(RawData key, {bool ensured = false}) {
-    assert(key != null && !key.isDisposed, 'Key is empty');
+    assert(!key.isDisposed, 'Key is empty');
     attemptTo('delete');
 
-    return errorHandler((errPtr) => lib.leveldbDelete(
+    return errorHandler((errPtr) => lib.leveldb_delete(
           ptr,
-          ensured ? WriteOptions.sync.ptr as Pointer<leveldb_writeoptions_t> : WriteOptions.noSync.ptr as Pointer<leveldb_writeoptions_t>,
-          key.ptr,
+          ensured
+              ? WriteOptions.sync.ptr as Pointer<leveldb_writeoptions_t>
+              : WriteOptions.noSync.ptr as Pointer<leveldb_writeoptions_t>,
+          key.ptr.cast(),
           key.length,
           errPtr,
         ));
@@ -283,7 +283,7 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
     bool fillCache = true,
     Snapshot? snapshot,
   }) {
-    assert(key != null && !key.isDisposed, 'Key is empty');
+    assert(!key.isDisposed, 'Key is empty');
     attemptTo('get');
     // ignore: invalid_use_of_protected_member
     final readOptionsAreDefault = ReadOptions.isEqualToDefault(
@@ -294,12 +294,12 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
 
     RawData exec(ReadOptions readOptions) {
       int valLength = 0;
-      final rawDataPtr = allocctx((Pointer<IntPtr> vallen) {
+      final rawDataPtr = allocctx((Pointer<Size> vallen) {
         final result = errorHandler((errptr) {
-          return lib.leveldbGet(
+          return lib.leveldb_get(
             ptr,
             ReadOptions.defaultOptions.ptr,
-            key.ptr,
+            key.ptr.cast(),
             key.length,
             vallen,
             errptr,
@@ -312,7 +312,7 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
         return result;
       });
 
-      return RawData.native(rawDataPtr, valLength);
+      return RawData.native(rawDataPtr.cast(), valLength);
     }
 
     if (readOptionsAreDefault) {
@@ -329,9 +329,18 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
     }
   }
 
-  DBIterator exec(ReadOptions readOptions, {Position<RawData> initialPosition = const Position.first()}) {
+  @override
+  void free(RawData data) {
+    assert(!data.isDisposed, 'Data is empty');
+    attemptTo('free');
+    return lib.leveldb_free(data.ptr.cast());
+  }
+
+  DBIterator exec(ReadOptions readOptions,
+      {Position<RawData> initialPosition = const Position.first()}) {
     return DBIterator.atPosition(
-      dbptr: lib.leveldbCreateIterator(ptr, readOptions.ptr as Pointer<leveldb_readoptions_t>),
+      dbptr: lib.leveldb_create_iterator(
+          ptr, readOptions.ptr as Pointer<leveldb_readoptions_t>),
       initialPosition: initialPosition,
     );
   }
@@ -367,15 +376,17 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
 
   @override
   void put(RawData key, RawData value, {bool ensured = false}) {
-    assert(key != null && !key.isDisposed, 'Key is empty');
-    assert(value != null && !value.isDisposed, 'Value is empty');
+    assert(!key.isDisposed, 'Key is empty');
+    assert(!value.isDisposed, 'Value is empty');
     return errorHandler((errPtr) {
-      return lib.leveldbPut(
+      return lib.leveldb_put(
         ptr,
-        ensured ? WriteOptions.sync.ptr as Pointer<leveldb_writeoptions_t> : WriteOptions.noSync.ptr as Pointer<leveldb_writeoptions_t>,
-        key.ptr,
+        ensured
+            ? WriteOptions.sync.ptr as Pointer<leveldb_writeoptions_t>
+            : WriteOptions.noSync.ptr as Pointer<leveldb_writeoptions_t>,
+        key.ptr.cast(),
         key.length,
-        value.ptr,
+        value.ptr.cast(),
         value.length,
         errPtr,
       );
@@ -389,9 +400,11 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
     if (!_updatesAreValid) return;
 
     return errorHandler((errPtr) {
-      return lib.leveldbWrite(
+      return lib.leveldb_write(
         ptr,
-        ensured ? WriteOptions.sync.ptr as Pointer<leveldb_writeoptions_t> : WriteOptions.noSync.ptr as Pointer<leveldb_writeoptions_t>,
+        ensured
+            ? WriteOptions.sync.ptr as Pointer<leveldb_writeoptions_t>
+            : WriteOptions.noSync.ptr as Pointer<leveldb_writeoptions_t>,
         updates.ptr as Pointer<leveldb_writebatch_t>,
         errPtr,
       );
@@ -407,20 +420,20 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
   @override
   void compact(RawData beginKey, RawData endKey) {
     attemptTo('compact');
-    return lib.leveldbCompactRange(
+    return lib.leveldb_compact_range(
       ptr,
-      beginKey.ptr,
+      beginKey.ptr.cast(),
       beginKey.length,
-      endKey.ptr,
+      endKey.ptr.cast(),
       endKey.length,
     );
   }
 
   String _getProperty(String prop) {
     final str = allocctx((strPtr) {
-      return lib.leveldbPropertyValue(ptr, strPtr as Pointer<Utf8>);
+      return lib.leveldb_property_value(ptr, strPtr.cast());
     }, () => prop.toNativeUtf8());
-    final result = Utf8Pointer(str).toDartString();
+    final result = str.cast<Utf8>().toDartString();
     calloc.free(str);
     return result;
   }
@@ -429,16 +442,18 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
   int approximateMemoryUsage() {
     attemptTo('approximateMemoryUsage');
     return int.tryParse(
-      _getProperty(_Properties.approximate_memory_usage),
-    ) ?? 0;
+          _getProperty(_Properties.approximate_memory_usage),
+        ) ??
+        0;
   }
 
   @override
   int numFilesAtLevel(int level) {
     attemptTo('numFilesAtLevel');
     return int.tryParse(
-      _getProperty(_Properties.num_files_at_level),
-    ) ?? 0;
+          _getProperty(_Properties.num_files_at_level),
+        ) ??
+        0;
   }
 
   @override
@@ -462,15 +477,15 @@ class _Snapshot implements Snapshot {
   @override
   Pointer<leveldb_snapshot_t> ptr;
 
-  _Snapshot(this.lib, this.dbptr) : ptr = lib.leveldbCreateSnapshot(dbptr);
+  _Snapshot(this.lib, this.dbptr) : ptr = lib.leveldb_create_snapshot(dbptr);
 
   @override
   void dispose() {
     if (isDisposed) return;
-    if (dbptr == null || dbptr == nullptr) {
+    if (dbptr == nullptr) {
       throw StateError('Attempt to [Snapshot.dispose] after [LevelDB.dispose]');
     }
-    lib.leveldbReleaseSnapshot(dbptr, ptr);
+    lib.leveldb_release_snapshot(dbptr, ptr);
     ptr = nullptr;
     dbptr = nullptr;
   }

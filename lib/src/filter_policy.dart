@@ -1,11 +1,27 @@
 import 'dart:ffi';
 
-import 'package:flutter_leveldb/interop/interop.dart';
-import 'package:meta/meta.dart';
+import 'package:leveldb_dart/src/leveldb_bindings.dart';
 
 import 'extensions.dart';
 import 'library.dart';
 import 'native_wrapper.dart';
+
+typedef filterpolicy_destructor = Void Function(Pointer<Void>);
+typedef filterpolicy_create_filter = Pointer<Char> Function(
+  Pointer<Void>,
+  Pointer<Pointer<Char>>,
+  Pointer<Size>,
+  Int,
+  Pointer<Size>,
+);
+typedef filterpolicy_key_may_match = Uint8 Function(
+  Pointer<Void>,
+  Pointer<Char>,
+  Size,
+  Pointer<Char>,
+  Size,
+);
+typedef filterpolicy_name = Pointer<Char> Function(Pointer<Void>);
 
 /// A database can be configured with a custom FilterPolicy object.
 /// This object is responsible for creating a small filter from a set
@@ -19,17 +35,15 @@ import 'native_wrapper.dart';
 /// NewBloomFilterPolicy() below).
 abstract class FilterPolicy extends AnyStructure {
   factory FilterPolicy({
+    required Pointer<Void> state,
     required Pointer<NativeFunction<filterpolicy_destructor>> destructor,
     required Pointer<NativeFunction<filterpolicy_create_filter>> createFilter,
     required Pointer<NativeFunction<filterpolicy_key_may_match>> keyMayMatch,
     required Pointer<NativeFunction<filterpolicy_name>> name,
   }) {
-    assert(destructor != null);
-    assert(createFilter != null);
-    assert(keyMayMatch != null);
-    assert(name != null);
     return _FilterPolicy(
       Lib.levelDB,
+      state: state,
       destructor: destructor,
       createFilter: createFilter,
       keyMayMatch: keyMayMatch,
@@ -60,11 +74,13 @@ class _FilterPolicy implements FilterPolicy {
 
   _FilterPolicy(
     this._lib, {
+    required Pointer<Void> state,
     required Pointer<NativeFunction<filterpolicy_destructor>> destructor,
     required Pointer<NativeFunction<filterpolicy_create_filter>> createFilter,
     required Pointer<NativeFunction<filterpolicy_key_may_match>> keyMayMatch,
     required Pointer<NativeFunction<filterpolicy_name>> name,
-  }) : ptr = _lib.leveldbFilterpolicyCreate(
+  }) : ptr = _lib.leveldb_filterpolicy_create(
+          state,
           destructor,
           createFilter,
           keyMayMatch,
@@ -74,7 +90,7 @@ class _FilterPolicy implements FilterPolicy {
   _FilterPolicy.bloom(
     this._lib,
     int bitsPerKey,
-  ) : ptr = _lib.leveldbFilterpolicyCreateBloom(bitsPerKey);
+  ) : ptr = _lib.leveldb_filterpolicy_create_bloom(bitsPerKey);
 
   @override
   Pointer<leveldb_filterpolicy_t> ptr;
@@ -82,7 +98,7 @@ class _FilterPolicy implements FilterPolicy {
   @override
   void dispose() {
     if (isDisposed) return;
-    _lib.leveldbFilterpolicyDestroy(ptr);
+    _lib.leveldb_filterpolicy_destroy(ptr);
     ptr = nullptr;
   }
 }

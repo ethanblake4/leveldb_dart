@@ -1,6 +1,6 @@
 import 'dart:ffi';
 import 'package:ffi/ffi.dart';
-import 'package:flutter_leveldb/src/exceptions.dart';
+import 'package:leveldb_dart/src/exceptions.dart';
 
 T allocctx<T, U extends NativeType>(
   T Function(Pointer<U> v) f, [
@@ -20,8 +20,8 @@ T allocctx<T, U extends NativeType>(
   return result;
 }
 
-T errorHandler<T>(T Function(Pointer<Pointer<Utf8>> errptr) f) {
-  final Pointer<Pointer<Utf8>> errptr = calloc.allocate(0);
+T errorHandler<T>(T Function(Pointer<Pointer<Char>> errptr) f) {
+  final Pointer<Pointer<Char>> errptr = calloc.allocate(0);
   errptr.value = nullptr;
 
   T result;
@@ -47,10 +47,10 @@ T errorHandler<T>(T Function(Pointer<Pointer<Utf8>> errptr) f) {
   return result;
 }
 
-Exception? _tryParseError(Pointer<Pointer<Utf8>> errptr) {
+Exception? _tryParseError(Pointer<Pointer<Char>> errptr) {
   if (errptr.value == nullptr) return null;
   try {
-    return LevelDBException.errptr(Utf8Pointer(errptr.value).toDartString());
+    return LevelDBException.errptr(errptr.value.cast<Utf8>().toDartString());
   } catch (e) {
     return e as Exception;
   }

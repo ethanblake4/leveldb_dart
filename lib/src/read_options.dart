@@ -1,7 +1,7 @@
 import 'dart:ffi';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_leveldb/interop/interop.dart';
+import 'package:leveldb_dart/src/leveldb_bindings.dart';
+import 'package:meta/meta.dart';
 
 import 'extensions.dart';
 import 'library.dart';
@@ -78,13 +78,15 @@ class _ReadOptions implements ReadOptions {
     bool? fillCache,
     Snapshot? snapshot,
   }) {
-    final ptr = lib.leveldbReadoptionsCreate();
-    lib.leveldbReadoptionsSetFillCache(ptr, fillCache?.toInt() ?? 0);
-    lib.leveldbReadoptionsSetVerifyChecksums(ptr, verifyChecksums?.toInt() ?? 0);
+    final ptr = lib.leveldb_readoptions_create();
+    lib.leveldb_readoptions_set_fill_cache(ptr, fillCache?.toInt() ?? 0);
+    lib.leveldb_readoptions_set_verify_checksums(
+        ptr, verifyChecksums?.toInt() ?? 0);
     if (snapshot == null || snapshot.isDisposed) {
-      lib.leveldbReadoptionsSetSnapshot(ptr, nullptr);
+      lib.leveldb_readoptions_set_snapshot(ptr, nullptr);
     } else {
-      lib.leveldbReadoptionsSetSnapshot(ptr, snapshot.ptr as Pointer<leveldb_snapshot_t>);
+      lib.leveldb_readoptions_set_snapshot(
+          ptr, snapshot.ptr as Pointer<leveldb_snapshot_t>);
     }
     return ptr;
   }
@@ -92,7 +94,7 @@ class _ReadOptions implements ReadOptions {
   @override
   void dispose() {
     if (isDisposed) return;
-    lib.leveldbReadoptionsDestroy(ptr);
+    lib.leveldb_readoptions_destroy(ptr);
     ptr == nullptr;
     // TODO: print friendly reminder, Snapshot is not disposed.
   }

@@ -1,6 +1,6 @@
 import 'dart:ffi';
 
-import 'package:flutter_leveldb/interop/interop.dart';
+import 'package:leveldb_dart/src/leveldb_bindings.dart';
 import 'extensions.dart';
 import 'library.dart';
 import 'native_wrapper.dart';
@@ -20,7 +20,7 @@ class _WriteOptions implements WriteOptions {
   @override
   void dispose() {
     if (isDisposed) return;
-    lib.leveldbWriteoptionsDestroy(ptr);
+    lib.leveldb_writeoptions_destroy(ptr);
     ptr = nullptr;
   }
 
@@ -32,8 +32,8 @@ extension on LibLevelDB {
   Pointer<leveldb_writeoptions_t> leveldbWriteOptionsCreateWithSync(
     bool isSync,
   ) {
-    final writeOptions = leveldbWriteoptionsCreate();
-    leveldbWriteoptionsSetSync(writeOptions, isSync ? 1 : 0);
+    final writeOptions = leveldb_writeoptions_create();
+    leveldb_writeoptions_set_sync(writeOptions, isSync ? 1 : 0);
     return writeOptions;
   }
 }

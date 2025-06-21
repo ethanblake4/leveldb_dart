@@ -1,12 +1,21 @@
 import 'dart:ffi';
 
-import 'package:flutter_leveldb/interop/src/leveldb_comparator_t.dart';
-import 'package:flutter_leveldb/interop/src/library.dart';
+import 'package:leveldb_dart/src/leveldb_bindings.dart';
 import 'package:meta/meta.dart';
 
 import 'extensions.dart';
 import 'library.dart';
 import 'native_wrapper.dart';
+
+typedef comparator_destructor = Void Function(Pointer<Void>);
+typedef comparator_compare = Int Function(
+  Pointer<Void>,
+  Pointer<Char>,
+  Size,
+  Pointer<Char>,
+  Size,
+);
+typedef comparator_name = Pointer<Char> Function(Pointer<Void>);
 
 // !: [Pointer.fromFunction] returned function address can only be invoked on the mutator (main)
 // !: thread of the current isolate. It will abort the process if invoked on any
@@ -19,15 +28,14 @@ import 'native_wrapper.dart';
 @experimental
 abstract class Comparator extends AnyStructure {
   factory Comparator({
+    required Pointer<Void> state,
     required Pointer<NativeFunction<comparator_destructor>> destructor,
     required Pointer<NativeFunction<comparator_compare>> compare,
     required Pointer<NativeFunction<comparator_name>> name,
   }) {
-    assert(destructor != null);
-    assert(compare != null);
-    assert(name != null);
     return _Comparator(
       Lib.levelDB,
+      state: state,
       destructor: destructor,
       compare: compare,
       name: name,
@@ -40,10 +48,12 @@ class _Comparator implements Comparator {
 
   _Comparator(
     this._lib, {
+    required Pointer<Void> state,
     required Pointer<NativeFunction<comparator_destructor>> destructor,
     required Pointer<NativeFunction<comparator_compare>> compare,
     required Pointer<NativeFunction<comparator_name>> name,
-  }) : ptr = _lib.leveldbComparatorCreate(
+  }) : ptr = _lib.leveldb_comparator_create(
+          state,
           destructor,
           compare,
           name,
@@ -55,7 +65,7 @@ class _Comparator implements Comparator {
   @override
   void dispose() {
     if (isDisposed) return;
-    _lib.leveldbComparatorDestroy(ptr);
+    _lib.leveldb_comparator_destroy(ptr);
     ptr = nullptr;
   }
 }

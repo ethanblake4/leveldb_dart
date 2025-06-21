@@ -1,5 +1,5 @@
 import 'dart:ffi';
-import 'package:flutter_leveldb/interop/interop.dart';
+import 'package:leveldb_dart/src/leveldb_bindings.dart';
 
 import 'cache.dart';
 import 'comparator.dart';
@@ -194,6 +194,7 @@ abstract class Options extends AnyStructure {
 }
 
 extension on Options {
+  // ignore: unused_element
   Options copyWith({
     Comparator? comparator,
     FilterPolicy? filterPolicy,
@@ -306,7 +307,7 @@ class _Options extends AnyStructure implements Options {
     this.maxOpenFiles = 1000,
     this.paranoidChecks = false,
     this.writeBufferSize = 4 * 1024 * 1024,
-  })  : ptr = lib.leveldbOptionsCreate()
+  })  : ptr = lib.leveldb_options_create()
           ..setBlockCache(blockCache, lib)
           ..setBlockSize(blockSize, lib)
           ..setBlockRestartInterval(blockRestartInterval, lib)
@@ -326,49 +327,53 @@ class _Options extends AnyStructure implements Options {
   @override
   void dispose() {
     if (isDisposed) return;
-    lib.leveldbOptionsDestroy(ptr);
+    lib.leveldb_options_destroy(ptr);
     ptr = nullptr;
   }
 }
 
 extension _OptionsSetup on Pointer<leveldb_options_t> {
-  void setBlockCache(Cache? v, LibLevelDB lib) =>
-      v != null ? lib.leveldbOptionsSetCache(this, v.ptr as Pointer<leveldb_cache_t>) : null;
-
-  void setComparator(Comparator? v, LibLevelDB lib) =>
-      v != null ? lib.leveldbOptionsSetComparator(this, v.ptr as Pointer<leveldb_comparator_t>) : null;
-
-  void setCompressionType(CompressionType v, LibLevelDB lib) => v != null
-      ? lib.leveldbOptionsSetCompression(this, v.associatedValue())
+  void setBlockCache(Cache? v, LibLevelDB lib) => v != null
+      ? lib.leveldb_options_set_cache(this, v.ptr as Pointer<leveldb_cache_t>)
       : null;
 
-  void setCreateIfMissing(bool v, LibLevelDB lib) =>
-      v != null ? lib.leveldbOptionsSetCreateIfMissing(this, v.toInt()) : null;
+  void setComparator(Comparator? v, LibLevelDB lib) => v != null
+      ? lib.leveldb_options_set_comparator(
+          this, v.ptr as Pointer<leveldb_comparator_t>)
+      : null;
 
-  void setEnv(Env? v, LibLevelDB lib) =>
-      v != null ? lib.leveldbOptionsSetEnv(this, v.ptr as Pointer<leveldb_env_t>) : null;
+  void setCompressionType(CompressionType v, LibLevelDB lib) =>
+      lib.leveldb_options_set_compression(this, v.associatedValue());
+  void setCreateIfMissing(bool v, LibLevelDB lib) =>
+      lib.leveldb_options_set_create_if_missing(this, v.toInt());
+
+  void setEnv(Env? v, LibLevelDB lib) => v != null
+      ? lib.leveldb_options_set_env(this, v.ptr as Pointer<leveldb_env_t>)
+      : null;
 
   void setErrorIfExists(bool v, LibLevelDB lib) =>
-      v != null ? lib.leveldbOptionsSetErrorIfExists(this, v.toInt()) : null;
+      lib.leveldb_options_set_error_if_exists(this, v.toInt());
 
-  void setFilterPolicy(FilterPolicy? v, LibLevelDB lib) =>
-      v != null ? lib.leveldbOptionsSetFilterPolicy(this, v.ptr as Pointer<leveldb_filterpolicy_t>) : null;
+  void setFilterPolicy(FilterPolicy? v, LibLevelDB lib) => v != null
+      ? lib.leveldb_options_set_filter_policy(
+          this, v.ptr as Pointer<leveldb_filterpolicy_t>)
+      : null;
 
   void setMaxFileSize(int v, LibLevelDB lib) =>
-      v != null ? lib.leveldbOptionsSetMaxFileSize(this, v) : null;
+      lib.leveldb_options_set_max_file_size(this, v);
 
   void setMaxOpenFiles(int v, LibLevelDB lib) =>
-      v != null ? lib.leveldbOptionsSetMaxOpenFiles(this, v) : null;
+      lib.leveldb_options_set_max_open_files(this, v);
 
   void setParanoidChecks(bool v, LibLevelDB lib) =>
-      v != null ? lib.leveldbOptionsSetParanoidChecks(this, v.toInt()) : null;
+      lib.leveldb_options_set_paranoid_checks(this, v.toInt());
 
   void setWriteBufferSize(int v, LibLevelDB lib) =>
-      v != null ? lib.leveldbOptionsSetWriteBufferSize(this, v) : null;
+      lib.leveldb_options_set_write_buffer_size(this, v);
 
   void setBlockRestartInterval(int v, LibLevelDB lib) =>
-      v != null ? lib.leveldbOptionsSetBlockRestartInterval(this, v) : null;
+      lib.leveldb_options_set_block_restart_interval(this, v);
 
   void setBlockSize(int v, LibLevelDB lib) =>
-      v != null ? lib.leveldbOptionsSetBlockSize(this, v) : null;
+      lib.leveldb_options_set_block_size(this, v);
 }

@@ -1,7 +1,7 @@
 import 'dart:ffi';
 import 'dart:typed_data';
 import 'package:ffi/ffi.dart';
-import 'package:flutter_leveldb/interop/interop.dart';
+import 'package:leveldb_dart/src/leveldb_bindings.dart';
 
 import 'native_wrapper.dart';
 import 'options.dart';
@@ -14,7 +14,6 @@ extension NativeCompressionType on CompressionType {
       case CompressionType.snappy:
         return leveldb_snappy_compression;
     }
-    throw Error(); // Unimplemented case
   }
 }
 
@@ -25,7 +24,7 @@ extension Bool on bool {
 extension DisposableExtension on DisposablePointer {
   /// if true - the pointer (ptr) can't be accessed or modified
   // ignore: invalid_use_of_protected_member
-  bool get isDisposed => ptr == null || ptr == nullptr;
+  bool get isDisposed => ptr == nullptr;
 
   void attemptTo(String funcName) {
     if (!isDisposed) return;
