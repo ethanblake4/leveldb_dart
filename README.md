@@ -1,5 +1,5 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/license/mit/)
-[![Star on Github](https://img.shields.io/github/stars/ethanblake4/dart_eval?logo=github&colorB=orange&label=stars)](https://github.com/ethanblake4/dart_eval)
+[![Star on Github](https://img.shields.io/github/stars/ethanblake4/leveldb_dart?logo=github&colorB=orange&label=stars)](https://github.com/ethanblake4/leveldb_dart)
 [![Github-sponsors](https://img.shields.io/badge/sponsor-30363D?logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/ethanblake4)
 
 An implementation of [LevelDB](https://github.com/google/leveldb) for Dart using dart:ffi. Based on [flutter_leveldb](https://pub.dev/packages/flutter_leveldb) by LiuJQ.
